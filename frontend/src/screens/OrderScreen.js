@@ -15,6 +15,7 @@ import {
   ORDER_PAY_RESET,
   ORDER_DELIVER_RESET,
 } from "../constants/orderConstants";
+import { post } from "../components/paytm";
 
 const OrderScreen = ({ match, history }) => {
   const orderId = match.params.id;
@@ -34,6 +35,27 @@ const OrderScreen = ({ match, history }) => {
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
+  const URL = "http://localhost:5000";
+  const paytmPayment = async (data) => {
+    try {
+      let res = await axios.post(`${URL}/payment`, data);
+      return res.data;
+    } catch (err) {
+      console.log("Error from paytm: ", err);
+    }
+  };
+
+  const orderNow = async () => {
+    let res = await paytmPayment({
+      amount: 500,
+      email: "nkyadav2905@gmail.com",
+    });
+    let information = {
+      action: "https://securegw-stage.paytm.in/order/process",
+      params: res,
+    };
+    post(information);
+  };
 
   if (!loading) {
     //   Calculate prices
@@ -202,10 +224,11 @@ const OrderScreen = ({ match, history }) => {
                   {!sdkReady ? (
                     <Loader />
                   ) : (
-                    <PayPalButton
-                      amount={order.totalPrice}
-                      onSuccess={successPaymentHandler}
-                    />
+                    // <PayPalButton
+                    //   amount={order.totalPrice}
+                    //   onSuccess={successPaymentHandler}
+                    // />
+                    <Button onClick={() => orderNow()}>Pay</Button>
                   )}
                 </ListGroup.Item>
               )}
